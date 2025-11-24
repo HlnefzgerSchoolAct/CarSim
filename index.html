@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Driving Simulator</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <!-- HUD -->
+    <div id="hud">
+        <div id="speedometer">
+            <span id="speed-value">0</span>
+            <span class="unit">km/h</span>
+        </div>
+        <div id="controls-info">
+            <p>W / ↑ - Accelerate</p>
+            <p>S / ↓ - Brake/Reverse</p>
+            <p>A / ← - Steer Left</p>
+            <p>D / → - Steer Right</p>
+        </div>
+    </div>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game Scripts -->
+    <script src="js/controls.js"></script>
+    <script src="js/car.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

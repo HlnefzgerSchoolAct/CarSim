@@ -102,8 +102,9 @@ class TirePhysics {
      */
     calculateLateralForce(slipAngle, load, surfaceGrip = 1.0) {
         // Simplified Pacejka Magic Formula: F = D * sin(C * atan(B * slip))
-        const slip = slipAngle * (180 / Math.PI); // Convert to degrees for formula
-        const force = this.D * Math.sin(this.C * Math.atan(this.B * slip * 0.1));
+        // Work directly with radians using adjusted coefficient
+        const slipFactor = slipAngle * 5.73; // ~180/PI * 0.1 combined
+        const force = this.D * Math.sin(this.C * Math.atan(this.B * slipFactor));
         return force * load * surfaceGrip;
     }
 

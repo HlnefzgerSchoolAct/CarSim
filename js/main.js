@@ -805,12 +805,15 @@ class Game {
         ctx.strokeStyle = '#555555';
         ctx.lineWidth = 3;
         
+        // Road offset from center (matches world.js road positions)
+        const ROAD_Y_OFFSET = 600;
+        
         // Horizontal roads
         ctx.beginPath();
-        ctx.moveTo(mapX, mapY + mapSize/2 - 20 * scale * 600);
-        ctx.lineTo(mapX + mapSize, mapY + mapSize/2 - 20 * scale * 600);
-        ctx.moveTo(mapX, mapY + mapSize/2 + 20 * scale * 600);
-        ctx.lineTo(mapX + mapSize, mapY + mapSize/2 + 20 * scale * 600);
+        ctx.moveTo(mapX, mapY + mapSize/2 - 20 * scale * ROAD_Y_OFFSET);
+        ctx.lineTo(mapX + mapSize, mapY + mapSize/2 - 20 * scale * ROAD_Y_OFFSET);
+        ctx.moveTo(mapX, mapY + mapSize/2 + 20 * scale * ROAD_Y_OFFSET);
+        ctx.lineTo(mapX + mapSize, mapY + mapSize/2 + 20 * scale * ROAD_Y_OFFSET);
         ctx.stroke();
         
         // Vertical road

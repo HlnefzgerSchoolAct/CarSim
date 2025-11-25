@@ -560,9 +560,9 @@ class Car {
                 // Deform towards the impact
                 const newPoint = point.add(direction.multiply(-deformAmount));
                 
-                // Limit maximum deformation
-                const maxDist = original.length() * 0.3;
-                if (newPoint.subtract(original).length() < maxDist) {
+                // Limit maximum deformation - use squared distances for performance
+                const maxDistSq = original.lengthSquared() * 0.09; // 0.3 * 0.3 = 0.09
+                if (newPoint.subtract(original).lengthSquared() < maxDistSq) {
                     this.bodyPoints[key] = newPoint;
                 }
             }

@@ -314,11 +314,15 @@ class World {
         if (Math.abs(x) < roadHalfWidth * 0.8 && Math.abs(y) < 1100) return true;
         if (Math.abs(y) < roadHalfWidth * 0.8 && Math.abs(x) < 1300) return true;
         
-        // Curved sections
-        const dist1 = Math.sqrt((x - 800)**2 + y**2);
-        const dist2 = Math.sqrt((x + 800)**2 + y**2);
-        if (Math.abs(dist1 - 600) < roadHalfWidth) return true;
-        if (Math.abs(dist2 - 600) < roadHalfWidth) return true;
+        // Curved sections - use squared distances for performance
+        const dx1 = x - 800;
+        const dx2 = x + 800;
+        const dist1Sq = dx1 * dx1 + y * y;
+        const dist2Sq = dx2 * dx2 + y * y;
+        const minRadiusSq = (600 - roadHalfWidth) * (600 - roadHalfWidth);
+        const maxRadiusSq = (600 + roadHalfWidth) * (600 + roadHalfWidth);
+        if (dist1Sq > minRadiusSq && dist1Sq < maxRadiusSq) return true;
+        if (dist2Sq > minRadiusSq && dist2Sq < maxRadiusSq) return true;
         
         return false;
     }
@@ -339,9 +343,11 @@ class World {
             return SurfaceType.ASPHALT;
         }
         
-        // Check for gravel areas (around track edges)
-        const distFromCenter = Math.sqrt(x*x + y*y);
-        if (distFromCenter > 1600 && distFromCenter < 1800) {
+        // Check for gravel areas (around track edges) - use squared distances
+        const distFromCenterSq = x * x + y * y;
+        const innerGravelSq = 1600 * 1600;
+        const outerGravelSq = 1800 * 1800;
+        if (distFromCenterSq > innerGravelSq && distFromCenterSq < outerGravelSq) {
             return SurfaceType.GRAVEL;
         }
         

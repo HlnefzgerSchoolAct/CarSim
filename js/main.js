@@ -15,8 +15,12 @@ class Game {
         this.controls = null;
         
         // Camera settings
-        this.cameraOffset = new THREE.Vector3(0, 5, -10);
-        this.cameraLookOffset = new THREE.Vector3(0, 1, 5);
+        this.cameraMode = 0; // 0: chase, 1: hood, 2: top-down
+        this.cameraModes = [
+            { offset: new THREE.Vector3(0, 5, -10), lookOffset: new THREE.Vector3(0, 1, 5), name: 'Chase' },
+            { offset: new THREE.Vector3(0, 1.5, 1), lookOffset: new THREE.Vector3(0, 1, 10), name: 'Hood' },
+            { offset: new THREE.Vector3(0, 20, 0), lookOffset: new THREE.Vector3(0, 0, 0.01), name: 'Top-Down' }
+        ];
         this.cameraLerpFactor = 0.05;
         
         // Screen shake settings
@@ -36,6 +40,10 @@ class Game {
         this.driftScoreElement = null;
         this.driftCurrentElement = null;
         this.driftComboElement = null;
+        this.driftAngleElement = null;
+        this.rpmElement = null;
+        this.rpmBarElement = null;
+        this.gearElement = null;
         this.gameContainer = null;
         
         this.init();
@@ -56,6 +64,10 @@ class Game {
         this.driftScoreElement = document.getElementById('drift-total');
         this.driftCurrentElement = document.getElementById('drift-current');
         this.driftComboElement = document.getElementById('drift-combo');
+        this.driftAngleElement = document.getElementById('drift-angle');
+        this.rpmElement = document.getElementById('rpm-value');
+        this.rpmBarElement = document.getElementById('rpm-bar');
+        this.gearElement = document.getElementById('gear');
         this.gameContainer = document.getElementById('game-container');
     }
 
@@ -104,16 +116,43 @@ class Game {
     updateCamera(deltaTime) {
         const carPosition = this.car.getPosition();
         const carRotation = this.car.getRotation();
+        
+        const currentMode = this.cameraModes[this.cameraMode];
+        const cameraOffset = currentMode.offset;
+        const cameraLookOffset = currentMode.lookOffset;
 
         // Calculate desired camera position (behind the car)
-        const offsetX = this.cameraOffset.x * Math.cos(carRotation) - this.cameraOffset.z * Math.sin(carRotation);
-        const offsetZ = this.cameraOffset.x * Math.sin(carRotation) + this.cameraOffset.z * Math.cos(carRotation);
+        let desiredPosition;
+        let lookAtPoint;
         
-        const desiredPosition = new THREE.Vector3(
-            carPosition.x + offsetX,
-            carPosition.y + this.cameraOffset.y,
-            carPosition.z + offsetZ
-        );
+        if (this.cameraMode === 2) {
+            // Top-down camera
+            desiredPosition = new THREE.Vector3(
+                carPosition.x,
+                carPosition.y + cameraOffset.y,
+                carPosition.z
+            );
+            lookAtPoint = carPosition.clone();
+        } else {
+            const offsetX = cameraOffset.x * Math.cos(carRotation) - cameraOffset.z * Math.sin(carRotation);
+            const offsetZ = cameraOffset.x * Math.sin(carRotation) + cameraOffset.z * Math.cos(carRotation);
+            
+            desiredPosition = new THREE.Vector3(
+                carPosition.x + offsetX,
+                carPosition.y + cameraOffset.y,
+                carPosition.z + offsetZ
+            );
+            
+            // Calculate look-at point (in front of the car)
+            const lookX = cameraLookOffset.z * Math.sin(carRotation);
+            const lookZ = cameraLookOffset.z * Math.cos(carRotation);
+            
+            lookAtPoint = new THREE.Vector3(
+                carPosition.x + lookX,
+                carPosition.y + cameraLookOffset.y,
+                carPosition.z + lookZ
+            );
+        }
 
         // Smoothly interpolate camera position
         this.camera.position.lerp(desiredPosition, this.cameraLerpFactor);
@@ -142,17 +181,11 @@ class Game {
             this.camera.position.y += (Math.random() - 0.5) * driftShake * 0.5;
         }
 
-        // Calculate look-at point (in front of the car)
-        const lookX = this.cameraLookOffset.z * Math.sin(carRotation);
-        const lookZ = this.cameraLookOffset.z * Math.cos(carRotation);
-        
-        const lookAtPoint = new THREE.Vector3(
-            carPosition.x + lookX,
-            carPosition.y + this.cameraLookOffset.y,
-            carPosition.z + lookZ
-        );
-
         this.camera.lookAt(lookAtPoint);
+    }
+    
+    toggleCamera() {
+        this.cameraMode = (this.cameraMode + 1) % this.cameraModes.length;
     }
     
     triggerScreenShake(intensity) {
@@ -203,6 +236,43 @@ class Game {
                 this.driftComboElement.style.display = 'none';
             }
         }
+        
+        // Update drift angle display
+        if (this.driftAngleElement) {
+            const angle = this.car.getDriftAngleDegrees();
+            if (this.car.getIsDrifting()) {
+                this.driftAngleElement.textContent = `${angle}°`;
+                this.driftAngleElement.style.display = 'block';
+            } else {
+                this.driftAngleElement.style.display = 'none';
+            }
+        }
+        
+        // Update tachometer
+        if (this.rpmElement) {
+            this.rpmElement.textContent = this.car.getRPM();
+        }
+        
+        if (this.rpmBarElement) {
+            const rpm = this.car.getRPM();
+            const maxRpm = 7500;
+            const percentage = (rpm / maxRpm) * 100;
+            this.rpmBarElement.style.width = `${percentage}%`;
+            
+            // Change color near redline
+            if (rpm > 6500) {
+                this.rpmBarElement.style.backgroundColor = '#ff0000';
+            } else if (rpm > 5000) {
+                this.rpmBarElement.style.backgroundColor = '#ff6600';
+            } else {
+                this.rpmBarElement.style.backgroundColor = '#00ff88';
+            }
+        }
+        
+        if (this.gearElement) {
+            const gear = this.car.getGear();
+            this.gearElement.textContent = gear === 0 ? 'R' : gear;
+        }
     }
 
     checkCollisions() {
@@ -222,11 +292,14 @@ class Game {
                 const impactPoint = new THREE.Vector3()
                     .addVectors(obstacle.position, pushDir.clone().multiplyScalar(obstacle.radius));
                 
+                // Impact direction (opposite of push)
+                const impactDirection = pushDir.clone().negate();
+                
                 // Apply collision response and get impact force
                 const impactForce = this.car.applyCollisionResponse(obstacle, pushDir);
                 
-                // Apply damage based on impact
-                const damageDealt = this.car.applyCollisionDamage(impactForce, impactPoint);
+                // Apply damage based on impact (now with direction for deformation)
+                const damageDealt = this.car.applyCollisionDamage(impactForce, impactPoint, impactDirection);
                 
                 // Trigger screen shake based on impact force
                 if (impactForce > 2) {
@@ -254,6 +327,15 @@ class Game {
         const currentTime = this.clock.getElapsedTime();
         const deltaTime = Math.min(currentTime - this.lastTime, 0.1); // Cap delta time
         this.lastTime = currentTime;
+        
+        // Handle controls
+        if (this.controls.shouldToggleCamera) {
+            this.toggleCamera();
+        }
+        
+        if (this.controls.shouldReset) {
+            this.car.reset();
+        }
 
         // Update game objects
         this.car.update(deltaTime, this.controls);

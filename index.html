@@ -16,6 +16,18 @@
             <span class="unit">km/h</span>
         </div>
         
+        <!-- Tachometer -->
+        <div id="tachometer">
+            <div class="tach-label">RPM</div>
+            <div class="rpm-bar-container">
+                <div id="rpm-bar"></div>
+            </div>
+            <div class="tach-info">
+                <span id="rpm-value">0</span>
+                <span id="gear">1</span>
+            </div>
+        </div>
+        
         <!-- Damage Indicator -->
         <div id="damage-indicator">
             <div class="damage-label">DAMAGE</div>
@@ -28,6 +40,7 @@
         <div id="drift-hud">
             <div id="drift-label">DRIFT SCORE</div>
             <div id="drift-total">0</div>
+            <div id="drift-angle"></div>
             <div id="drift-current"></div>
             <div id="drift-combo"></div>
         </div>
@@ -38,6 +51,8 @@
             <p>A / ← - Steer Left</p>
             <p>D / → - Steer Right</p>
             <p>SPACE - Handbrake (Drift)</p>
+            <p>R - Reset Car</p>
+            <p>C - Change Camera</p>
         </div>
     </div>
 

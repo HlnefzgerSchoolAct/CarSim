@@ -9,8 +9,14 @@ class InputControls {
             backward: false,
             left: false,
             right: false,
-            brake: false
+            brake: false,
+            reset: false,
+            cameraToggle: false
         };
+        
+        // Camera toggle state (triggered once per press)
+        this.cameraSwitchPressed = false;
+        this.resetPressed = false;
 
         this.setupEventListeners();
     }
@@ -49,6 +55,12 @@ class InputControls {
             case 'Space':
                 this.keys.brake = isPressed;
                 break;
+            case 'KeyR':
+                this.keys.reset = isPressed;
+                break;
+            case 'KeyC':
+                this.keys.cameraToggle = isPressed;
+                break;
         }
     }
 
@@ -71,5 +83,29 @@ class InputControls {
 
     get isHandbrake() {
         return this.keys.brake;
+    }
+    
+    get shouldReset() {
+        // Trigger only once per press
+        if (this.keys.reset && !this.resetPressed) {
+            this.resetPressed = true;
+            return true;
+        }
+        if (!this.keys.reset) {
+            this.resetPressed = false;
+        }
+        return false;
+    }
+    
+    get shouldToggleCamera() {
+        // Trigger only once per press
+        if (this.keys.cameraToggle && !this.cameraSwitchPressed) {
+            this.cameraSwitchPressed = true;
+            return true;
+        }
+        if (!this.keys.cameraToggle) {
+            this.cameraSwitchPressed = false;
+        }
+        return false;
     }
 }

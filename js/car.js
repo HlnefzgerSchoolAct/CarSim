@@ -41,6 +41,10 @@ class Car {
         this.DAMAGE_THRESHOLD = 5;       // m/s impact speed for damage
         this.MAX_DAMAGE = 100;           // Maximum damage value
         
+        // Wheel Position Constants
+        this.WHEEL_X_OFFSET = 1;         // Lateral offset from car center
+        this.REAR_WHEEL_Z_OFFSET = -1.3; // Rear wheel position along car length
+        
         // Damage System
         this.damage = 0;
         this.health = 100;
@@ -558,10 +562,10 @@ class Car {
         // Emit tire smoke during drift
         if (!this.isDrifting || this.smokeParticles.length >= this.maxSmokeParticles) return;
         
-        // Emit from rear wheels
+        // Emit from rear wheels using wheel position constants
         const rearLeft = this.position.clone();
-        rearLeft.x += Math.cos(this.rotation) * -1 + Math.sin(this.rotation) * -1.3;
-        rearLeft.z += -Math.sin(this.rotation) * -1 + Math.cos(this.rotation) * -1.3;
+        rearLeft.x += Math.cos(this.rotation) * -this.WHEEL_X_OFFSET + Math.sin(this.rotation) * this.REAR_WHEEL_Z_OFFSET;
+        rearLeft.z += -Math.sin(this.rotation) * -this.WHEEL_X_OFFSET + Math.cos(this.rotation) * this.REAR_WHEEL_Z_OFFSET;
         rearLeft.y = 0.1;
         
         const smoke = {
@@ -696,14 +700,14 @@ class Car {
         const cos = Math.cos(this.rotation);
         const sin = Math.sin(this.rotation);
         
-        // Rear left wheel
-        const rlX = this.position.x + cos * -1 + sin * -1.3;
-        const rlZ = this.position.z + -sin * -1 + cos * -1.3;
+        // Rear left wheel - using wheel position constants
+        const rlX = this.position.x + cos * -this.WHEEL_X_OFFSET + sin * this.REAR_WHEEL_Z_OFFSET;
+        const rlZ = this.position.z + -sin * -this.WHEEL_X_OFFSET + cos * this.REAR_WHEEL_Z_OFFSET;
         positions.push(new THREE.Vector3(rlX, 0.01, rlZ));
         
-        // Rear right wheel
-        const rrX = this.position.x + cos * 1 + sin * -1.3;
-        const rrZ = this.position.z + -sin * 1 + cos * -1.3;
+        // Rear right wheel - using wheel position constants
+        const rrX = this.position.x + cos * this.WHEEL_X_OFFSET + sin * this.REAR_WHEEL_Z_OFFSET;
+        const rrZ = this.position.z + -sin * this.WHEEL_X_OFFSET + cos * this.REAR_WHEEL_Z_OFFSET;
         positions.push(new THREE.Vector3(rrX, 0.01, rrZ));
         
         return positions;

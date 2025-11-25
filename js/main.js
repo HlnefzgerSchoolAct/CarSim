@@ -242,6 +242,9 @@ class Game {
             const wheelPositions = this.car.getRearWheelPositions();
             this.world.addTireMarks(wheelPositions, Math.abs(this.car.getSlipAngle()));
         }
+        
+        // Fade existing tire marks over time
+        this.world.updateTireMarks(deltaTime);
     }
 
     animate() {

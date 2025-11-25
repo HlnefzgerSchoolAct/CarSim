@@ -34,6 +34,7 @@ class World {
                 const oldMark = this.tireMarks.shift();
                 this.scene.remove(oldMark);
                 oldMark.geometry.dispose();
+                oldMark.material.dispose();
             }
             
             // Create small tire mark segment

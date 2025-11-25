@@ -48,7 +48,10 @@ class Car {
         
         // Damage properties
         this.DEFORM_RESISTANCE = 50000;    // N/m
-        this.DAMAGE_THRESHOLD = 15;        // m/s impact for damage
+        this.DAMAGE_THRESHOLD = 8;         // m/s (~29 km/h) - speed threshold for damage
+        
+        // Minimum wheel load to prevent physics instabilities
+        this.MIN_WHEEL_LOAD = 100;         // N - prevents zero/negative loads in calculations
         
         // Base physics constants
         this.baseMaxSpeed = 50;
@@ -73,6 +76,9 @@ class Car {
         // Crash Physics Constants
         this.RESTITUTION = 0.3;          // Bounce coefficient
         this.MAX_DAMAGE = 100;           // Maximum damage value
+        
+        // Minimum speed for upshifting (m/s)
+        this.MIN_SHIFT_SPEED = 3;        // ~11 km/h
         
         // Wheel Position Constants
         this.WHEEL_X_OFFSET = this.TRACK_WIDTH / 2;
@@ -564,8 +570,9 @@ class Car {
         // Smooth RPM change
         this.currentRPM += (targetRPM - this.currentRPM) * deltaTime * 5;
         
-        // Auto-shift (simple implementation)
-        if (this.currentRPM > this.REDLINE * 0.95 && this.currentGear < 6) {
+        // Auto-shift (with minimum speed check for upshift)
+        const speed = Math.abs(this.velocity);
+        if (this.currentRPM > this.REDLINE * 0.95 && this.currentGear < 6 && speed > this.MIN_SHIFT_SPEED) {
             this.currentGear++;
         } else if (this.currentRPM < this.IDLE_RPM * 1.5 && this.currentGear > 1 && this.velocity > 0) {
             this.currentGear--;
@@ -599,9 +606,9 @@ class Car {
         this.wheelLoads.rearLeft = baseLoad + longitudinalTransfer/2 + lateralDir * lateralTransfer/2;
         this.wheelLoads.rearRight = baseLoad + longitudinalTransfer/2 - lateralDir * lateralTransfer/2;
         
-        // Clamp to positive values
+        // Clamp wheel loads to minimum to prevent physics instabilities
         for (const key in this.wheelLoads) {
-            this.wheelLoads[key] = Math.max(100, this.wheelLoads[key]);
+            this.wheelLoads[key] = Math.max(this.MIN_WHEEL_LOAD, this.wheelLoads[key]);
         }
     }
     

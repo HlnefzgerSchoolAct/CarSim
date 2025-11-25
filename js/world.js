@@ -7,11 +7,60 @@ class World {
         this.scene = scene;
         this.obstacles = [];
         
+        // Tire marks system
+        this.tireMarks = [];
+        this.maxTireMarks = 500;
+        this.tireMarkMaterial = new THREE.MeshBasicMaterial({
+            color: 0x222222,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide
+        });
+        
         this.createGround();
         this.createLighting();
         this.createSkybox();
         this.createObstacles();
         this.createRoadMarkings();
+    }
+    
+    addTireMarks(wheelPositions, slipAngle) {
+        // Create tire marks based on slip intensity
+        const intensity = Math.min(slipAngle / 0.5, 1); // 0-1 based on slip angle
+        
+        wheelPositions.forEach(pos => {
+            if (this.tireMarks.length >= this.maxTireMarks) {
+                // Remove oldest tire mark
+                const oldMark = this.tireMarks.shift();
+                this.scene.remove(oldMark);
+                oldMark.geometry.dispose();
+                oldMark.material.dispose();
+            }
+            
+            // Create small tire mark segment
+            const markGeometry = new THREE.PlaneGeometry(0.15, 0.3);
+            const markMaterial = this.tireMarkMaterial.clone();
+            markMaterial.opacity = 0.3 + intensity * 0.4;
+            
+            const mark = new THREE.Mesh(markGeometry, markMaterial);
+            mark.position.copy(pos);
+            mark.rotation.x = -Math.PI / 2;
+            mark.rotation.z = Math.random() * 0.2 - 0.1; // Slight random rotation
+            
+            this.scene.add(mark);
+            this.tireMarks.push(mark);
+        });
+    }
+    
+    // Fade tire marks over time (optional performance optimization)
+    updateTireMarks(deltaTime) {
+        // Gradually fade old tire marks
+        for (let i = 0; i < Math.min(10, this.tireMarks.length); i++) {
+            const mark = this.tireMarks[i];
+            if (mark.material.opacity > 0.1) {
+                mark.material.opacity -= deltaTime * 0.05;
+            }
+        }
     }
 
     createGround() {

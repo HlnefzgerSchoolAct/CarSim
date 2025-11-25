@@ -69,6 +69,115 @@ body {
     opacity: 0.8;
 }
 
+/* Damage Indicator Styles */
+#damage-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #ff4444;
+    border-radius: 10px;
+    padding: 10px 15px;
+    min-width: 150px;
+}
+
+.damage-label {
+    font-size: 12px;
+    color: #ff6666;
+    margin-bottom: 5px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.damage-bar {
+    width: 100%;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+#damage-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffcc00, #ff6600);
+    border-radius: 7px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Drift Score HUD Styles */
+#drift-hud {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #ff00ff;
+    border-radius: 10px;
+    padding: 15px 20px;
+    text-align: center;
+    min-width: 120px;
+}
+
+#drift-label {
+    font-size: 10px;
+    color: #ff66ff;
+    margin-bottom: 5px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+#drift-total {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ff00ff;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+#drift-current {
+    font-size: 18px;
+    color: #00ffff;
+    margin-top: 5px;
+    display: none;
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+#drift-combo {
+    font-size: 14px;
+    color: #ffff00;
+    margin-top: 3px;
+    display: none;
+    font-weight: bold;
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    to {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* Screen Shake Animation */
+@keyframes screen-shake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5px, -5px); }
+    20% { transform: translate(5px, -5px); }
+    30% { transform: translate(-5px, 5px); }
+    40% { transform: translate(5px, 5px); }
+    50% { transform: translate(-3px, -3px); }
+    60% { transform: translate(3px, -3px); }
+    70% { transform: translate(-3px, 3px); }
+    80% { transform: translate(3px, 3px); }
+    90% { transform: translate(-1px, -1px); }
+}
+
+.screen-shake {
+    animation: screen-shake 0.3s ease-in-out;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
     #speedometer {
@@ -84,5 +193,21 @@ body {
     #controls-info {
         font-size: 10px;
         padding: 10px 15px;
+    }
+    
+    #damage-indicator {
+        bottom: 15px;
+        left: 15px;
+        min-width: 100px;
+    }
+    
+    #drift-hud {
+        top: 15px;
+        right: 15px;
+        padding: 10px 15px;
+    }
+    
+    #drift-total {
+        font-size: 24px;
     }
 }

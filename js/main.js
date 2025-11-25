@@ -19,12 +19,24 @@ class Game {
         this.cameraLookOffset = new THREE.Vector3(0, 1, 5);
         this.cameraLerpFactor = 0.05;
         
+        // Screen shake settings
+        this.screenShake = {
+            intensity: 0,
+            duration: 0,
+            decay: 5
+        };
+        
         // Time tracking
         this.clock = new THREE.Clock();
         this.lastTime = 0;
         
         // UI Elements
         this.speedElement = document.getElementById('speed-value');
+        this.damageElement = null;
+        this.driftScoreElement = null;
+        this.driftCurrentElement = null;
+        this.driftComboElement = null;
+        this.gameContainer = null;
         
         this.init();
     }
@@ -35,7 +47,16 @@ class Game {
         this.createRenderer();
         this.createGameObjects();
         this.setupEventListeners();
+        this.setupHUDElements();
         this.animate();
+    }
+    
+    setupHUDElements() {
+        this.damageElement = document.getElementById('damage-fill');
+        this.driftScoreElement = document.getElementById('drift-total');
+        this.driftCurrentElement = document.getElementById('drift-current');
+        this.driftComboElement = document.getElementById('drift-combo');
+        this.gameContainer = document.getElementById('game-container');
     }
 
     createScene() {
@@ -80,7 +101,7 @@ class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    updateCamera() {
+    updateCamera(deltaTime) {
         const carPosition = this.car.getPosition();
         const carRotation = this.car.getRotation();
 
@@ -96,6 +117,30 @@ class Game {
 
         // Smoothly interpolate camera position
         this.camera.position.lerp(desiredPosition, this.cameraLerpFactor);
+        
+        // Apply screen shake
+        if (this.screenShake.intensity > 0) {
+            const shakeX = (Math.random() - 0.5) * this.screenShake.intensity;
+            const shakeY = (Math.random() - 0.5) * this.screenShake.intensity;
+            const shakeZ = (Math.random() - 0.5) * this.screenShake.intensity;
+            
+            this.camera.position.x += shakeX;
+            this.camera.position.y += shakeY;
+            this.camera.position.z += shakeZ;
+            
+            // Decay screen shake
+            this.screenShake.intensity -= this.screenShake.decay * deltaTime;
+            if (this.screenShake.intensity < 0) {
+                this.screenShake.intensity = 0;
+            }
+        }
+        
+        // Add subtle camera shake during aggressive drifts
+        if (this.car.getIsDrifting() && Math.abs(this.car.getSlipAngle()) > 0.3) {
+            const driftShake = Math.abs(this.car.getSlipAngle()) * 0.1;
+            this.camera.position.x += (Math.random() - 0.5) * driftShake;
+            this.camera.position.y += (Math.random() - 0.5) * driftShake * 0.5;
+        }
 
         // Calculate look-at point (in front of the car)
         const lookX = this.cameraLookOffset.z * Math.sin(carRotation);
@@ -109,10 +154,55 @@ class Game {
 
         this.camera.lookAt(lookAtPoint);
     }
+    
+    triggerScreenShake(intensity) {
+        this.screenShake.intensity = Math.max(this.screenShake.intensity, intensity);
+    }
 
     updateHUD() {
+        // Update speedometer
         const speed = this.car.getSpeed();
         this.speedElement.textContent = speed;
+        
+        // Update damage indicator
+        if (this.damageElement) {
+            const damage = this.car.getDamage();
+            this.damageElement.style.width = `${damage}%`;
+            
+            // Change color based on damage level
+            if (damage > 70) {
+                this.damageElement.style.backgroundColor = '#ff0000';
+            } else if (damage > 40) {
+                this.damageElement.style.backgroundColor = '#ff6600';
+            } else {
+                this.damageElement.style.backgroundColor = '#ffcc00';
+            }
+        }
+        
+        // Update drift score
+        if (this.driftScoreElement) {
+            this.driftScoreElement.textContent = this.car.getDriftScore();
+        }
+        
+        if (this.driftCurrentElement) {
+            const currentScore = this.car.getCurrentDriftScore();
+            if (currentScore > 0) {
+                this.driftCurrentElement.textContent = `+${currentScore}`;
+                this.driftCurrentElement.style.display = 'block';
+            } else {
+                this.driftCurrentElement.style.display = 'none';
+            }
+        }
+        
+        if (this.driftComboElement) {
+            const combo = this.car.getDriftCombo();
+            if (combo > 1) {
+                this.driftComboElement.textContent = `x${combo.toFixed(1)}`;
+                this.driftComboElement.style.display = 'block';
+            } else {
+                this.driftComboElement.style.display = 'none';
+            }
+        }
     }
 
     checkCollisions() {
@@ -123,16 +213,38 @@ class Game {
         for (const obstacle of obstacles) {
             const distance = carPos.distanceTo(obstacle.position);
             if (distance < carRadius + obstacle.radius) {
-                // Simple collision response - stop the car
-                this.car.velocity *= -0.5;
-                
-                // Push car away from obstacle
+                // Calculate push direction
                 const pushDir = new THREE.Vector3()
                     .subVectors(carPos, obstacle.position)
                     .normalize();
-                this.car.position.add(pushDir.multiplyScalar(0.5));
+                
+                // Calculate impact point (for sparks)
+                const impactPoint = new THREE.Vector3()
+                    .addVectors(obstacle.position, pushDir.clone().multiplyScalar(obstacle.radius));
+                
+                // Apply collision response and get impact force
+                const impactForce = this.car.applyCollisionResponse(obstacle, pushDir);
+                
+                // Apply damage based on impact
+                const damageDealt = this.car.applyCollisionDamage(impactForce, impactPoint);
+                
+                // Trigger screen shake based on impact force
+                if (impactForce > 2) {
+                    this.triggerScreenShake(Math.min(impactForce * 0.3, 2));
+                }
             }
         }
+    }
+    
+    updateTireMarks(deltaTime) {
+        // Add tire marks when drifting
+        if (this.car.getIsDrifting()) {
+            const wheelPositions = this.car.getRearWheelPositions();
+            this.world.addTireMarks(wheelPositions, Math.abs(this.car.getSlipAngle()));
+        }
+        
+        // Fade existing tire marks over time
+        this.world.updateTireMarks(deltaTime);
     }
 
     animate() {
@@ -146,7 +258,8 @@ class Game {
         // Update game objects
         this.car.update(deltaTime, this.controls);
         this.checkCollisions();
-        this.updateCamera();
+        this.updateTireMarks(deltaTime);
+        this.updateCamera(deltaTime);
         this.updateHUD();
 
         // Render

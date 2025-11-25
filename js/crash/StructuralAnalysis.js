@@ -13,9 +13,10 @@
  */
 
 /**
- * Main class for this module
+ * Structural integrity monitoring and analysis
+ * Tracks load-bearing members and crumple zone behavior
  */
-class ${classname} {
+class StructuralAnalysis {
     constructor(config = {}) {
         // Initialize properties
         this.config = config;
@@ -219,5 +220,5 @@ class ${classname} {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ${classname} };
+    module.exports = { StructuralAnalysis };
 }

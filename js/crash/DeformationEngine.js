@@ -13,9 +13,10 @@
  */
 
 /**
- * Main class for this module
+ * FEA-based mesh deformation engine
+ * Simulates realistic metal deformation during crashes
  */
-class ${classname} {
+class DeformationEngine {
     constructor(config = {}) {
         // Initialize properties
         this.config = config;
@@ -219,5 +220,5 @@ class ${classname} {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ${classname} };
+    module.exports = { DeformationEngine };
 }

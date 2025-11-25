@@ -13,9 +13,10 @@
  */
 
 /**
- * Main class for this module
+ * Energy tracking and dissipation calculator
+ * Monitors kinetic energy, deformation energy, and heat generation
  */
-class ${classname} {
+class EnergyCalculator {
     constructor(config = {}) {
         // Initialize properties
         this.config = config;
@@ -219,5 +220,5 @@ class ${classname} {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ${classname} };
+    module.exports = { EnergyCalculator };
 }

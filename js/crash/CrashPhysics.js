@@ -13,9 +13,10 @@
  */
 
 /**
- * Main class for this module
+ * Main crash physics controller
+ * Integrates material system, deformation, energy, and damage tracking
  */
-class ${classname} {
+class CrashPhysics {
     constructor(config = {}) {
         // Initialize properties
         this.config = config;
@@ -219,5 +220,5 @@ class ${classname} {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ${classname} };
+    module.exports = { CrashPhysics };
 }

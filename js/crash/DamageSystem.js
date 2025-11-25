@@ -13,9 +13,10 @@
  */
 
 /**
- * Main class for this module
+ * Damage tracking and propagation system
+ * Monitors structural and mechanical damage throughout the vehicle
  */
-class ${classname} {
+class DamageSystem {
     constructor(config = {}) {
         // Initialize properties
         this.config = config;
@@ -219,5 +220,5 @@ class ${classname} {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ${classname} };
+    module.exports = { DamageSystem };
 }

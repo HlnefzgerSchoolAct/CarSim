@@ -13,9 +13,10 @@
  */
 
 /**
- * Main class for this module
+ * Impact resolution and contact solver
+ * Handles collision response with realistic impulse calculations
  */
-class ${classname} {
+class ImpactSolver {
     constructor(config = {}) {
         // Initialize properties
         this.config = config;
@@ -219,5 +220,5 @@ class ${classname} {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ${classname} };
+    module.exports = { ImpactSolver };
 }

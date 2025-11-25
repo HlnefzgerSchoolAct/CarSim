@@ -171,7 +171,7 @@ class MaterialProperties {
         
         // S-N curve (Wöhler curve): N = C / σ^m
         // Simplified: N = (ultimate_strength / stress_amplitude)^10
-        const cyclesTo Failure = Math.pow(
+        const cyclesToFailure = Math.pow(
             this.ultimateStrength / stressAmplitude,
             10
         );
